@@ -1,70 +1,61 @@
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
-from models.models import db, Student, ProgressTracker
+from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from models.models import StudyPlanner, Student
 
 progress_tracker_blueprint = Blueprint("progress_tracker", __name__)
 
 
-# CREATE PROGRESS
-@progress_tracker_blueprint.route("/api/progress_tracker", methods=["POST"])
+@progress_tracker_blueprint.route("/api/progress_tracker", methods=["GET"])
 @jwt_required()
-def create_progress():
+def track_progress():
 
-    data = request.get_json()
+    user_id = get_jwt_identity()
 
-    student_id = data.get("student_id")
-    planned_hours = data.get("planned_hours")
-    completed_hours = data.get("completed_hours")
-    if planned_hours == 0:
-        completion_percentage = 0
-    else:
-        completion_percentage = (completed_hours / planned_hours) * 100
+    student = Student.query.filter_by(user_id=user_id).first()
 
-    student = Student.query.filter_by(id=student_id).first()
+    goals = StudyPlanner.query.filter_by(student_id=student.id).all()
 
-    if not student:
-        return jsonify({"msg": "Student not found"}), 404
+    total_goals = len(goals)
+    completed_goals = len([g for g in goals if g.completed])
+    remaining_goals = total_goals - completed_goals
 
-    progress = ProgressTracker(
-        student_id=student_id,
-        planned_hours=planned_hours,
-        completed_hours=completed_hours,
-        completion_percentage=completion_percentage
-    )
+    completion_rate = round((completed_goals / total_goals) * 100, 2) if total_goals else 0
 
-    db.session.add(progress)
-    db.session.commit()
+    total_hours = sum(g.estimated_hours for g in goals)
+    completed_hours = sum(g.estimated_hours for g in goals if g.completed)
+    remaining_hours = total_hours - completed_hours
 
-    return jsonify({"msg": "Progress added successfully"}), 201
+    efficiency_score = round((completed_hours / total_hours) * 100, 2) if total_hours else 0
 
+    recommendations = []
 
-# GET PROGRESS
-@progress_tracker_blueprint.route("/api/progress_tracker/<roll_number>", methods=["GET"])
-@jwt_required()
-def get_progress(roll_number):
+    if completion_rate < 30:
+        recommendations.append("You are behind schedule. Increase daily study time.")
 
-    student = Student.query.filter_by(roll_number=roll_number).first()
+    if completion_rate >= 30 and completion_rate < 70:
+        recommendations.append("Your progress is moderate. Stay consistent.")
 
-    if not student:
-        return jsonify({"msg": "Student not found"}), 404
+    if completion_rate >= 70:
+        recommendations.append("Excellent progress. Keep it up!")
 
-    records = ProgressTracker.query.filter_by(student_id=student.id).all()
+    high_priority_remaining = [
+        g for g in goals if g.priority == "High" and not g.completed
+    ]
 
-    result = []
+    if high_priority_remaining:
+        recommendations.append("Complete high priority topics first.")
 
-    for record in records:
+    if efficiency_score < 50:
+        recommendations.append("Your study efficiency is low. Try focused study sessions.")
 
-        if record.planned_hours == 0:
-            completion_percentage = 0
-        else:
-            completion_percentage = (
-                record.completed_hours / record.planned_hours
-            ) * 100
-
-        result.append({
-            "planned_hours": record.planned_hours,
-            "completed_hours": record.completed_hours,
-            "completion_percentage": round(completion_percentage, 2)
-        })
-
-    return jsonify(result)
+    return jsonify({
+        "total_goals": total_goals,
+        "completed_goals": completed_goals,
+        "remaining_goals": remaining_goals,
+        "completion_rate": completion_rate,
+        "total_hours": total_hours,
+        "completed_hours": completed_hours,
+        "remaining_hours": remaining_hours,
+        "efficiency_score": efficiency_score,
+        "recommendations": recommendations
+    })

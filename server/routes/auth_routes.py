@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
-from models.models import db, User
+from models.models import db, User, Student
 
 auth_blueprint = Blueprint("auth", __name__)
 
@@ -48,8 +48,23 @@ def login():
         if user is None or not check_password_hash(user.password, password):
             return jsonify({"msg": "Bad username or password"}), 401
 
-        access_token = create_access_token(identity=str(user.id), additional_claims={"role": user.role, "email": user.email})
-        return jsonify(access_token=access_token, role=user.role), 200
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={"role": user.role, "email": user.email}
+        )
+
+        roll_number = None
+
+        if user.role == "student":
+            student = Student.query.filter_by(user_id=user.id).first()
+            if student:
+                roll_number = student.roll_number
+
+        return jsonify(
+            access_token=access_token,
+            role=user.role,
+            roll_number=roll_number
+        ), 200
 
     except Exception as e:
         return jsonify({"msg": str(e)}), 500

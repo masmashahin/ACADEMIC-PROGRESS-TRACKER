@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 import pandas as pd
-from models.models import db, Student
+from werkzeug.security import generate_password_hash
+from models.models import db, Student, User
 
 students_blueprint = Blueprint("students", __name__)
 
@@ -46,13 +47,27 @@ def upload_students_csv():
                 updated += 1
 
             else:
+                # create login account
+                new_user = User(
+                    email=row["email"],
+                    password=generate_password_hash(str(row["roll_number"])),
+                    role="student"
+                )
+
+                db.session.add(new_user)
+                db.session.flush()   # gets the new_user.id before commit
+
+                # create student record
                 new_student = Student(
                     roll_number=row["roll_number"],
                     name=row["name"],
                     email=row["email"],
-                    department=row["department"]
+                    department=row["department"],
+                    user_id=new_user.id
                 )
+
                 db.session.add(new_student)
+
                 inserted += 1
 
         db.session.commit()
@@ -65,6 +80,7 @@ def upload_students_csv():
 
     except Exception as e:
         db.session.rollback()
+        print("UPLOAD ERROR:", e) 
         return jsonify({"msg": str(e)}), 500
 
 @students_blueprint.route("/api/students", methods=["GET"])

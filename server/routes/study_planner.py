@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from models.models import db, StudyPlanner, Student
 study_planner_blueprint = Blueprint("study_planner", __name__)
 
@@ -14,32 +14,38 @@ def create_study_plan():
         return jsonify({"msg": "Only students can access study planner"}), 403
     
     data = request.get_json()
-
-    roll_number = data.get("roll_number")
+    
     subject = data.get("subject")
-    weekly_target_hours = data.get("weekly_target_hours")
-    goal_marks = data.get("goal_marks")
+    topic = data.get("topic")
+    estimated_hours = data.get("estimated_hours")
     deadline = data.get("deadline")
+    priority = data.get("priority")
+    if not subject or not topic or not estimated_hours or not priority:
+        return jsonify({"msg": "All fields are required"}), 400
 
-    student = Student.query.filter_by(roll_number=roll_number).first()
+    user_id = get_jwt_identity() 
+    student = Student.query.filter_by(user_id=user_id).first()
 
     if not student:
         return jsonify({"msg": "Student not found"}), 404
     # Check duplicate
     existing_plan = StudyPlanner.query.filter_by(
         student_id=student.id,
-        subject=subject
+        subject=subject,
+        topic=topic
     ).first()
 
     if existing_plan:
-        return jsonify({"msg": "Study plan already exists for this subject"}), 400
+        return jsonify({"msg": "This topic already exists for this subject"}), 400
     
     plan = StudyPlanner(
         student_id=student.id,
         subject=subject,
-        weekly_target=weekly_target_hours,
-        goal_marks=goal_marks,
-        deadline=deadline
+        topic=topic,
+        estimated_hours=estimated_hours,
+        deadline=deadline,
+        priority=priority,
+        completed=False
     )
 
     db.session.add(plan)
@@ -47,10 +53,12 @@ def create_study_plan():
 
     return jsonify({"msg": "Study plan created successfully"}), 201
 
-@study_planner_blueprint.route("/api/study_planner/<roll_number>", methods=["GET"])
+@study_planner_blueprint.route("/api/study_planner", methods=["GET"])
 @jwt_required()
-def get_study_plans(roll_number):
-    student = Student.query.filter_by(roll_number=roll_number).first()
+def get_study_plans():
+
+    user_id = get_jwt_identity()
+    student = Student.query.filter_by(user_id=user_id).first()
 
     if not student:
         return jsonify({"msg": "Student not found"}), 404
@@ -61,45 +69,60 @@ def get_study_plans(roll_number):
         {
             "id": plan.id,
             "subject": plan.subject,
-            "weekly_target_hours": plan.weekly_target,
-            "goal_marks": plan.goal_marks,
-            "deadline": plan.deadline
+            "topic": plan.topic,
+            "estimated_hours": plan.estimated_hours,
+            "deadline": plan.deadline,
+            "priority": plan.priority,
+            "completed": plan.completed
         }
         for plan in plans
     ])
 
-@study_planner_blueprint.route("/api/study_planner/<id>", methods=["PUT"])
+@study_planner_blueprint.route("/api/study_planner/<int:plan_id>", methods=["PUT"])
 @jwt_required()
-def update_study_plan(id):
+def update_study_plan(plan_id):
 
-    plan = StudyPlanner.query.get(id)
+    user_id = get_jwt_identity()
+    student = Student.query.filter_by(user_id=user_id).first()
+
+    if not student:
+        return jsonify({"msg": "Student not found"}), 404
+
+    plan = StudyPlanner.query.filter_by(id=plan_id, student_id=student.id).first()
 
     if not plan:
-        return jsonify({"msg": "Plan not found"}), 404
+        return jsonify({"msg": "Study plan not found"}), 404
 
     data = request.get_json()
 
     plan.subject = data.get("subject", plan.subject)
-    plan.weekly_target = data.get("weekly_target_hours", plan.weekly_target)
-    plan.goal_marks = data.get("goal_marks", plan.goal_marks)
+    plan.topic = data.get("topic", plan.topic)
+    plan.estimated_hours = data.get("estimated_hours", plan.estimated_hours)
     plan.deadline = data.get("deadline", plan.deadline)
+    plan.priority = data.get("priority", plan.priority)
+    plan.completed = data.get("completed", plan.completed)
 
     db.session.commit()
 
     return jsonify({"msg": "Study plan updated successfully"})
 
-@study_planner_blueprint.route("/api/study_planner/<id>", methods=["DELETE"])
+@study_planner_blueprint.route("/api/study_planner/<int:plan_id>", methods=["DELETE"])
 @jwt_required()
-def delete_study_plan(id):
+def delete_study_plan(plan_id):
 
-    plan = StudyPlanner.query.get(id)
+    user_id = get_jwt_identity()
+    student = Student.query.filter_by(user_id=user_id).first()
+
+    if not student:
+        return jsonify({"msg": "Student not found"}), 404
+
+    plan = StudyPlanner.query.filter_by(id=plan_id, student_id=student.id).first()
 
     if not plan:
-        return jsonify({"msg": "Plan not found"}), 404
+        return jsonify({"msg": "Study plan not found"}), 404
 
     db.session.delete(plan)
     db.session.commit()
 
     return jsonify({"msg": "Study plan deleted successfully"})
-
 

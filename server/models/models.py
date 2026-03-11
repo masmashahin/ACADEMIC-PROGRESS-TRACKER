@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -36,7 +36,7 @@ class Mark(db.Model):
     internal_2 = Column(Integer, nullable=False)
     semester_marks = Column(Integer, nullable=False)
     __table_args__ = (
-    db.UniqueConstraint('roll_number', 'subject_id', 'semester'),
+    db.UniqueConstraint('roll_number', 'subject_id', 'semester',name='unique_mark'),
     )
 
 class Attendance(db.Model):
@@ -46,19 +46,21 @@ class Attendance(db.Model):
     semester = Column(String, nullable=False)
     attendance_percentage = Column(Integer, nullable=False)
     __table_args__ = (
-    db.UniqueConstraint('roll_number', 'semester'),
+    db.UniqueConstraint('roll_number', 'semester',name='unique_attendance'),
     )
 
 class StudyPlanner(db.Model):
     __tablename__ = 'study_planner'
     id = Column(Integer, primary_key=True)
     student_id = Column(Integer, ForeignKey('students.id'), nullable=False)
-    subject = Column(String, nullable=False)
-    weekly_target = Column(Integer, nullable=False)
-    goal_marks = Column(Integer, nullable=False)
-    deadline = Column(DateTime, nullable=False)
+    subject = Column(String(100), nullable=False)
+    topic = Column(String(200), nullable=False)
+    estimated_hours = Column(Integer, nullable=False)
+    deadline = Column(Date, nullable=False)
+    priority = Column(String(10), nullable=False) 
+    completed = Column(Boolean, default=False) 
     __table_args__ = (
-    db.UniqueConstraint('student_id', 'subject', name='unique_student_subject'),
+    db.UniqueConstraint('student_id', 'subject', 'topic', name='unique_study_goal'),
 )
 
 class ProgressTracker(db.Model):

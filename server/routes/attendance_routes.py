@@ -29,29 +29,37 @@ def upload_attendance_csv():
         return jsonify({"msg": "CSV missing required columns"}), 400
 
     inserted = 0
-    skipped = 0
+    updated = 0
 
     for index, row in df.iterrows():
+        existing = Attendance.query.filter_by(
+        roll_number=row['roll_number'],
+        semester=row['semester']
+        ).first()
 
-        attendance = Attendance(
-            roll_number=row['roll_number'],
-            semester=row['semester'],
-            attendance_percentage=row['attendance_percentage']
-        )
+        if existing:
 
-        try:
+            existing.attendance_percentage = row['attendance_percentage']
+            updated += 1
+
+        else:
+
+            attendance = Attendance(
+                roll_number=row['roll_number'],
+                semester=row['semester'],
+                attendance_percentage=row['attendance_percentage']
+            )
+
             db.session.add(attendance)
-            db.session.commit()
             inserted += 1
 
-        except IntegrityError:
-            db.session.rollback()
-            skipped += 1
+    db.session.commit()
+        
 
     return jsonify({
         "message": "Upload completed",
         "inserted": inserted,
-        "duplicates_skipped": skipped
+        "duplicates_skipped": updated
     }), 200
 
 

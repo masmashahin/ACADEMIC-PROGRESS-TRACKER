@@ -1,76 +1,76 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-export default function LoginPage() {
-
+import API from "../services/api";
+console.log(API);
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
+      const response = await API.post("/auth/login", {
+        email,
+        password,
+      });
+      console.log("LOGIN RESPONSE:", response.data);
 
-      const response = await axios.post(
-        "http://127.0.0.1:5000/api/auth/login",
-        { email, password }
-      );
+      const token = response.data.access_token;
+      const role = response.data.role;
 
-      const { access_token, role } = response.data;
-
-      localStorage.setItem("token", access_token);
-
-      if (role === "faculty") {
-        navigate("/faculty/dashboard");
-      } else if (role === "student") {
-        navigate("/student/dashboard");
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      if (role === "student") {
+        localStorage.setItem("roll_number", response.data.roll_number);
       }
 
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard";
+      }
+      
+      if (role === "faculty") {
+        window.location.href = "/faculty-dashboard";
+      }
+      
+      if (role === "student") {
+        window.location.href = "/student-dashboard";
+      }
     } catch (error) {
-      alert("Login failed");
+      console.error(error);
+      alert("Login failed. Please check your credentials.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-8 rounded shadow-md w-80"
-      >
-
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Login
-        </h2>
-
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 border mb-4"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 border mb-4"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded"
-        >
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold">Login</h1>
+      <form onSubmit={handleLogin}>
+        <label>
+          Username:
+          <input
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </label>
+        <br />
+        <label>
+          Password:
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+        <br />
+        <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition">
           Login
         </button>
-
       </form>
-
     </div>
   );
-}
+};
+
+export default LoginPage;
