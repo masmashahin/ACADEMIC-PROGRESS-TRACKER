@@ -1,35 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import StudentSelfProgress from "../components/StudentSelfProgress";
 import StudyPlanner from "../components/StudyPlanner";
 import ProgressTracker from "../components/ProgressTracker";
 
+import PageContainer from "../ui/layout/PageContainer";
+import Card from "../ui/components/Card";
+
 export default function StudentDashboard() {
 
   const [tab, setTab] = useState("progress");
 
-  const navigate = useNavigate();
-  const role = localStorage.getItem("role");
-
-  useEffect(() => {
-    if (role !== "student") {
-      navigate(
-        role === "admin"
-          ? "/admin-dashboard"
-          : role === "faculty"
-          ? "/faculty-dashboard"
-          : "/login"
-      );
-    }
-  }, [role]);
 
   return (
+    <PageContainer title="Student Dashboard">
 
-    <div className="p-10">
+    <div className="space-y-6">
 
       <h1 className="text-3xl font-bold mb-6">
-        Student Dashboard
+      
       </h1>
 
       {/* Tabs */}
@@ -59,7 +49,9 @@ export default function StudentDashboard() {
         <button
           onClick={()=>{
             localStorage.clear();
-            window.location.href="/";
+
+            // force React to reload app state cleanly
+            window.location.replace("/login");
           }}
           className="bg-red-500 text-white px-4 py-2 rounded"
         >
@@ -70,11 +62,25 @@ export default function StudentDashboard() {
 
       {/* Tab Content */}
 
-      {tab === "progress" && <StudentSelfProgress />}
-      {tab === "planner" && <StudyPlanner />}
-      {tab === "tracker" && <ProgressTracker />}
+      {tab === "progress" && (
+        <Card>
+          <StudentSelfProgress />
+        </Card>
+      )}
+      {tab === "planner" && (
+        <Card>
+          <StudyPlanner />
+        </Card>
+      )}
+      {tab === "tracker" && (
+        <Card>
+          <ProgressTracker />
+        </Card>
+      )}
 
     </div>
+
+    </PageContainer>
 
   );
 

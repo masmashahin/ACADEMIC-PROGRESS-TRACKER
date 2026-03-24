@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../services/api";
+import Card from "../ui/components/Card";
 
 import {
   Chart as ChartJS,
@@ -45,175 +46,149 @@ export default function StudentProgress() {
 
   return (
 
-    <div>
+    <div className="space-y-6">
 
-      {/* SEARCH */}
+    {/* SEARCH */}
+    <Card className="flex flex-col md:flex-row gap-4 items-center">
 
-      <div className="mb-6 flex gap-3">
+      <input
+        className="border p-2 rounded w-full md:w-1/3"
+        placeholder="Enter Roll Number"
+        onChange={(e)=>setRoll(e.target.value)}
+      />
 
-        <input
-          className="border p-2"
-          placeholder="Enter Roll Number"
-          onChange={(e)=>setRoll(e.target.value)}
-        />
+      <select
+        className="border p-2 rounded w-full md:w-1/4"
+        onChange={(e)=>setSemester(e.target.value)}
+      >
+        <option value="">Select Semester</option>
+        {[1,2,3,4,5,6,7,8].map(s => (
+          <option key={s} value={s}>Sem {s}</option>
+        ))}
+      </select>
 
-        <select
-            className="border p-2"
-            onChange={(e)=>setSemester(e.target.value)}
-        >
-            <option value="">Select Semester</option>
-            <option value="1">Sem 1</option>
-            <option value="2">Sem 2</option>
-            <option value="3">Sem 3</option>
-            <option value="4">Sem 4</option>
-            <option value="5">Sem 5</option>
-            <option value="6">Sem 6</option>
-            <option value="7">Sem 7</option>
-            <option value="8">Sem 8</option>
-        </select>
+      <button
+        onClick={searchStudent}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        Search
+      </button>
 
-        <button
-          onClick={searchStudent}
-          className="bg-blue-500 text-white px-4 py-2 ml-3"
-        >
-          Search
-        </button>
+    </Card>
 
-      </div>
+    {/* DATA */}
+    {data && (
+      <div className="space-y-6">
 
-      {/* STUDENT DATA */}
+        {/* STUDENT INFO */}
+        <Card>
+          <h2 className="text-lg font-semibold mb-3">Student Information</h2>
 
-      {data && (
+          <p><b>Name:</b> {data.student_info.name}</p>
+          <p><b>Roll Number:</b> {data.student_info.roll_number}</p>
+          <p><b>Department:</b> {data.student_info.department}</p>
+        </Card>
 
-        <div className="space-y-6">
-            <div className="bg-white p-6 rounded shadow mb-6">
+        {/* STATS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                <h2 className="text-xl font-bold mb-2">
-                Student Information
-                </h2>
+          <div className="p-6 rounded-2xl text-white shadow-md bg-gradient-to-r from-pink-500 to-red-400">
+            <p className="text-sm opacity-80">Academic %</p>
+            <h2 className="text-2xl font-bold">{data.academic_percentage}</h2>
+          </div>
 
-                <p>
-                <b>Name:</b> {data.student_info.name}
-                </p>
+          <div className="p-6 rounded-2xl text-white shadow-md bg-gradient-to-r from-indigo-500 to-blue-500">
+            <p className="text-sm opacity-80">Attendance %</p>
+            <h2 className="text-2xl font-bold">{data.attendance_percentage}</h2>
+          </div>
 
-                <p>
-                <b>Roll Number:</b> {data.student_info.roll_number}
-                </p>
+          <div className="p-6 rounded-2xl text-white shadow-md bg-gradient-to-r from-purple-500 to-pink-500">
+            <p className="text-sm opacity-80">CGPA</p>
+            <h2 className="text-2xl font-bold">{data.cgpa}</h2>
+          </div>
 
-                <p>
-                <b>Department:</b> {data.student_info.department}
-                </p>
+        </div>
 
-            </div>
-
-          <p><b>Academic %:</b> {data.academic_percentage}</p>
-          <p><b>Attendance %:</b> {data.attendance_percentage}</p>
-          <p><b>CGPA:</b> {data.cgpa}</p>
-
-          {/* RISK WARNING */}
-
-          {data.risk_status === "AT RISK" && (
-
+        {/* RISK */}
+        {data.risk_status === "AT RISK" && (
+          <Card>
             <p className="text-red-600 font-bold">
               Warning: Student is academically at risk
             </p>
+          </Card>
+        )}
 
-          )}
+        {/* MARKS TABLE */}
+        <Card>
+          <h3 className="text-lg font-semibold mb-4">Marks</h3>
 
-          {/* MARKS TABLE */}
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border p-2">Subject</th>
+                <th className="border p-2">Internal 1</th>
+                <th className="border p-2">Internal 2</th>
+                <th className="border p-2">Semester Marks</th>
+              </tr>
+            </thead>
 
-          <div>
-
-            <h3 className="font-bold mb-2">
-              Marks
-            </h3>
-
-            <table className="w-full border">
-
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border p-2">Subject</th>
-                  <th className="border p-2">Internal 1</th>
-                  <th className="border p-2">Internal 2</th>
-                  <th className="border p-2">Semester Marks</th>
+            <tbody>
+              {data.marks?.map((m) => (
+                <tr key={m.subject_id}>
+                  <td className="border p-2">{m.subject_id}</td>
+                  <td className="border p-2">{m.internal_1}</td>
+                  <td className="border p-2">{m.internal_2}</td>
+                  <td className="border p-2">{m.semester_marks}</td>
                 </tr>
-              </thead>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+          
+        {/* CHARTS (MAIN FIX 🔥) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-              <tbody>
-
-                {data.marks?.map((m) => (
-
-                  <tr key={m.subject_id}>
-
-                    <td className="border p-2">{m.subject_id}</td>
-                    <td className="border p-2">{m.internal_1}</td>
-                    <td className="border p-2">{m.internal_2}</td>
-                    <td className="border p-2">{m.semester_marks}</td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-          {/* CGPA CHART */}
-
-          <div>
-
-            <h3 className="font-bold mb-2">
-              CGPA Trend
-            </h3>
-
-            <Line
-              data={{
-                labels: data.cgpa_trend?.map(c => `Sem ${c.semester}`),
-                datasets: [
-                  {
+          <Card className="h-[350px]">
+            <h3 className="text-lg font-semibold mb-4">CGPA Trend</h3>
+            <div className="h-full">
+              <Line
+                data={{
+                  labels: data.cgpa_trend?.map(c => `Sem ${c.semester}`),
+                  datasets: [{
                     label: "CGPA",
                     data: data.cgpa_trend?.map(c => c.cgpa),
                     borderColor: "blue"
-                  }
-                ]
-              }}
-            />
+                  }]
+                }}
+                options={{ maintainAspectRatio: false }}
+              />
+            </div>
+          </Card>
 
-          </div>
-
-          {/* ATTENDANCE CHART */}
-
-          <div>
-
-            <h3 className="font-bold mb-2">
-              Attendance Trend
-            </h3>
-
-            <Bar
-              data={{
-                labels: ["Attendance"],
-                datasets: [
-                  {
+          <Card className="h-[350px]">
+            <h3 className="text-lg font-semibold mb-4">Attendance Trend</h3>
+            <div className="h-full">
+              <Bar
+                data={{
+                  labels: ["Attendance"],
+                  datasets: [{
                     label: "Attendance %",
                     data: [data.attendance_percentage],
                     backgroundColor: "green"
-                  }
-                ]
-              }}
-            />
+                  }]
+                }}
+                options={{ maintainAspectRatio: false }}
+              />
+            </div>
+          </Card>
 
-          </div>
+        </div>
 
-          {/* MARKS COMPARISON */}
+        {/* MARKS COMPARISON */}
+        <Card className="h-[400px]">
+          <h3 className="text-lg font-semibold mb-4">Marks Comparison</h3>
 
-          <div>
-
-            <h3 className="font-bold mb-2">
-              Marks Comparison
-            </h3>
-
+          <div className="h-full">
             <Bar
               data={{
                 labels: data.marks?.map(m=>m.subject_id),
@@ -237,6 +212,7 @@ export default function StudentProgress() {
               }}
               options={{
                 responsive: true,
+                maintainAspectRatio: false, // 🔥 MUST
                 scales: {
                   y: {
                     beginAtZero: true,
@@ -245,36 +221,25 @@ export default function StudentProgress() {
                 }
               }}
             />
-
           </div>
+        </Card>
 
-          {/* RECOMMENDATIONS */}
+        {/* RECOMMENDATIONS */}
+        {data.recommendations?.length > 0 && (
+          <Card>
+            <h3 className="font-semibold mb-2">Recommendations</h3>
+            <ul className="list-disc ml-6">
+              {data.recommendations.map((r,i)=>(
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </Card>
+        )}
 
-          {data.recommendations && data.recommendations.length > 0  && (
+      </div>
+    )}
 
-            <div>
+  </div>
+);
 
-              <h3 className="font-bold">
-                Recommendations
-              </h3>
-
-              <ul className="list-disc ml-6">
-
-                {data.recommendations.map((r,i)=>(
-                  <li key={i}>{r}</li>
-                ))}
-
-              </ul>
-
-            </div>
-
-          )}
-
-        </div>
-
-      )}
-
-    </div>
-
-  );
 }

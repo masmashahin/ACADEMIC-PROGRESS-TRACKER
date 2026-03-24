@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
+import PageContainer from "../ui/layout/PageContainer";
+import Card from "../ui/components/Card";
+
 const AdminDashboard = () => {
+  const navigate = useNavigate();
 
   const [faculty, setFaculty] = useState({
     name: "",
@@ -58,16 +63,18 @@ const AdminDashboard = () => {
 
 
   return (
+    <PageContainer title="Admin Dashboard">
 
     <div className="p-10 space-y-10">
 
       <h1 className="text-3xl font-bold">
-        Admin Dashboard
+        
       </h1>
       <button
         onClick={()=>{
-            localStorage.clear();
-            window.location.href="/";
+            localStorage.removeItem("token");
+            localStorage.removeItem("role");
+            navigate("/", { replace: true });
         }}
         className="bg-red-500 text-white px-4 py-2 rounded"
         >
@@ -77,7 +84,7 @@ const AdminDashboard = () => {
 
       {/* CREATE FACULTY */}
 
-      <div className="bg-white p-6 shadow rounded space-y-3">
+      <Card>
 
         <h2 className="text-xl font-semibold">
           Create Faculty
@@ -127,12 +134,12 @@ const AdminDashboard = () => {
           Create Faculty
         </button>
 
-      </div>
+      </Card>
 
 
       {/* STUDENT CSV UPLOAD */}
 
-      <div className="bg-white p-6 shadow rounded space-y-3">
+        <Card>
 
         <h2 className="text-xl font-semibold">
           Upload Students CSV
@@ -143,9 +150,10 @@ const AdminDashboard = () => {
           onChange={handleStudentUpload}
         />
 
-      </div>
+      </Card>
 
     </div>
+    </PageContainer>
 
   );
 

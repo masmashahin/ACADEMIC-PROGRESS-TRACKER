@@ -5,8 +5,18 @@ export default function DataUpload(){
 
   const [marksFile,setMarksFile] = useState(null);
   const [attendanceFile,setAttendanceFile] = useState(null);
+  const [loadingMarks, setLoadingMarks] = useState(false);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
+
+  const [marksName, setMarksName] = useState("");
+  const [attendanceName, setAttendanceName] = useState("");
 
   const uploadMarks = async ()=>{
+
+    if(!marksFile){
+      alert("Please select a marks CSV file");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("file",marksFile);
@@ -16,10 +26,13 @@ export default function DataUpload(){
       await API.post("/marks/upload_csv",formData);
 
       alert("Marks Uploaded Successfully");
+      setMarksFile(null);
+      setMarksName("");
 
-    }catch(err){
-      console.error(err);
-      alert(err.response?.data?.msg);
+    }catch (err) {
+      alert(err.response?.data?.msg || "Upload failed");
+    } finally {
+      setLoadingMarks(false);
     }
 
   };
@@ -36,67 +49,109 @@ export default function DataUpload(){
 
     try{
 
+      setLoadingAttendance(true);
       await API.post("/attendance/upload_csv",formData);
 
       alert("Attendance Uploaded Successfully");
+      setAttendanceFile(null);
+      setAttendanceName("");
 
-    }catch(err){
-      console.error(err);
+    }catch (err) {
+      alert("Upload failed");
+    } finally {
+      setLoadingAttendance(false);
     }
 
   };
 
-  return(
+  return (
 
-    <div className="space-y-10">
-
+    <div className="space-y-8">
+  
       {/* MARKS UPLOAD */}
-
-      <div>
-
-        <h3 className="text-xl font-bold mb-3">
-        Upload Marks CSV
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+  
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Upload Marks CSV
         </h3>
-
-        <input
-        type="file"
-        onChange={(e)=>setMarksFile(e.target.files[0])}
-        />
-
-        <button
-        className="bg-green-600 text-white px-4 py-2 ml-3 rounded"
-        onClick={uploadMarks}
-        >
-        Upload Marks
-        </button>
-
+  
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <input
+              type="file"
+              onChange={(e) => {
+                setMarksFile(e.target.files[0]);
+                setMarksName(e.target.files[0]?.name);
+              }}
+              className="hidden"
+              id="marksFile"
+            />
+            <label
+              htmlFor="marksFile"
+              className="cursor-pointer block border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100"
+            >
+              {marksName || "Choose file"}
+            </label>
+          </div>
+  
+          <button
+            disabled={loadingMarks}
+            onClick={uploadMarks}
+            className={`px-5 py-2 rounded-lg text-sm font-medium text-white transition
+              ${loadingMarks ? "bg-green-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}
+            `}
+          >
+            {loadingMarks ? "Uploading..." : "Upload"}
+          </button>
+  
+        </div>
+  
       </div>
-
-
+  
+  
       {/* ATTENDANCE UPLOAD */}
-
-      <div>
-
-        <h3 className="text-xl font-bold mb-3">
-        Upload Attendance CSV
+      <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6">
+  
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Upload Attendance CSV
         </h3>
+  
+        <div className="flex items-center gap-4">
 
-        <input
-        type="file"
-        onChange={(e)=>setAttendanceFile(e.target.files[0])}
-        />
+          <div className="flex-1">
+            <input
+              type="file"
+              onChange={(e) => {
+                setAttendanceFile(e.target.files[0]);
+                setAttendanceName(e.target.files[0]?.name);
+              }}
+              className="hidden"
+              id="attendanceFile"
+            />
 
-        <button
-        className="bg-blue-600 text-white px-4 py-2 ml-3 rounded"
-        onClick={uploadAttendance}
-        >
-        Upload Attendance
-        </button>
+            <label
+              htmlFor="attendanceFile"
+              className="cursor-pointer block border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 hover:bg-gray-100"
+            >
+              {attendanceName || "Choose file"}
+            </label>
+          </div>
 
+          <button
+            disabled={loadingAttendance}
+            onClick={uploadAttendance}
+            className={`px-5 py-2 rounded-lg text-sm font-medium text-white transition
+              ${loadingAttendance ? "bg-blue-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}
+            `}
+          >
+            {loadingAttendance ? "Uploading..." : "Upload"}
+          </button>
+
+        </div>
       </div>
-
+  
     </div>
-
+  
   );
 
 }

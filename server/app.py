@@ -18,6 +18,7 @@ from routes.progress_tracker import progress_tracker_blueprint
 from utils import csv_parser
 
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:Asma%4019@localhost:5432/academic_tracker"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 

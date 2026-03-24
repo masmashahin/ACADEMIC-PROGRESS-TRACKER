@@ -11,23 +11,21 @@ import StudentDashboard from "./pages/StudentDashboard";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 
-function App() {
 
-  const role = localStorage.getItem("role");
-
-  const ProtectedRoute = ({ element, allowedRole }) => {
-
+  const ProtectedRoute = ({ children, allowedRole }) => {
+    const role = localStorage.getItem("role");
+  
     if (!role) {
-      return <Navigate to="/login" />;
+      return <Navigate to="/login" replace />;
     }
-
+  
     if (role !== allowedRole) {
-      return <Navigate to="/login" />;
+      return <Navigate to="/login" replace />;
     }
-
-    return element;
+  
+    return children;
   };
-
+  function App() {
   return (
     <Router>
 
@@ -40,30 +38,27 @@ function App() {
         <Route
           path="/admin-dashboard"
           element={
-            <ProtectedRoute
-              element={<AdminDashboard />}
-              allowedRole="admin"
-            />
+            <ProtectedRoute allowedRole="admin">
+            <AdminDashboard />
+            </ProtectedRoute> 
           }
         />
 
         <Route
           path="/faculty-dashboard"
           element={
-            <ProtectedRoute
-              element={<FacultyDashboard />}
-              allowedRole="faculty"
-            />
+            <ProtectedRoute allowedRole="faculty">
+            <FacultyDashboard />
+            </ProtectedRoute>
           }
         />
 
         <Route
           path="/student-dashboard"
           element={
-            <ProtectedRoute
-              element={<StudentDashboard />}
-              allowedRole="student"
-            />
+            <ProtectedRoute allowedRole="student">
+            <StudentDashboard />
+            </ProtectedRoute>
           }
         />
 
