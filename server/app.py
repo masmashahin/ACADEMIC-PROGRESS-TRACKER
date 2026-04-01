@@ -20,7 +20,12 @@ from utils import csv_parser
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:Asma%4019@localhost:5432/academic_tracker"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or "sqlite:///local.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['JWT_SECRET_KEY'] = "super-secret-key"
@@ -74,5 +79,5 @@ def home():
 with app.app_context():
     db.create_all()
 if __name__ == '__main__':  
-    app.run(debug=True)
+    app.run()
 
