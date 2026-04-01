@@ -79,7 +79,7 @@ def home():
 # create tables + default user
 with app.app_context():
     db.create_all()
-       
+
     # 🔥 Create default user if not exists
     if not User.query.filter_by(email="admin@test.com").first():
         user = User(
@@ -89,6 +89,9 @@ with app.app_context():
         )
         db.session.add(user)
         db.session.commit()
+
+        print("DEFAULT USER CREATED")
 if __name__ == '__main__':  
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
 
