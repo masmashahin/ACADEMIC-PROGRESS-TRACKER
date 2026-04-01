@@ -23,17 +23,29 @@ def upload_attendance_csv():
         if not file.filename.endswith('.csv'):
             return jsonify({"msg": "Invalid file type"}), 400
 
-        df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
-        df.columns = df.columns.str.strip()
+        try:
+            content = file.read().decode("utf-8")
+            df = pd.read_csv(io.StringIO(content))
+            df.columns = df.columns.str.strip()
+        except Exception as e:
+            return jsonify({"msg": "CSV read error: " + str(e)}), 400
 
         required_columns = ['roll_number', 'semester', 'attendance_percentage']
 
         if not all(column in df.columns for column in required_columns):
             return jsonify({"msg": "CSV missing required columns"}), 400
+        
+        df["roll_number"] = df["roll_number"].astype(str)
+        df["semester"] = df["semester"].astype(str)
+        df["attendance_percentage"] = pd.to_numeric(df["attendance_percentage"], errors="coerce")
+
+        if df.isnull().values.any():
+            return jsonify({"msg": "Invalid or empty values in CSV"}), 400
 
         inserted = 0
         updated = 0
-
+        df = df.dropna()
+        
         for index, row in df.iterrows():
             existing = Attendance.query.filter_by(
             roll_number=row['roll_number'],
@@ -50,7 +62,7 @@ def upload_attendance_csv():
                 attendance = Attendance(
                     roll_number=row['roll_number'],
                     semester=row['semester'],
-                    attendance_percentage=row['attendance_percentage']
+                    attendance_percentage=float(row['attendance_percentage'])
                 )
 
                 db.session.add(attendance)

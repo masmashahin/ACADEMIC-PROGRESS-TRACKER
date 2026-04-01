@@ -67,7 +67,8 @@ export default function DataUpload(){
       document.getElementById("attendanceFile").value = ""; 
 
     }catch (err) {
-      alert("Upload failed");
+      console.error(err);
+      alert(err.response?.data?.msg || "Upload failed");
     } finally {
       setLoadingAttendance(false);
     }
