@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://academic-backend-vo9i.onrender.com",
+  baseURL: "https://academic-backend-vo9i.onrender.com/api",
 });
 
 // Attach JWT token automatically
