@@ -9,58 +9,62 @@ attendance_blueprint = Blueprint("attendance", __name__, url_prefix='/api/attend
 @attendance_blueprint.route('/upload_csv', methods=['POST'])
 @jwt_required()
 def upload_attendance_csv():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"msg": "No file part"}), 400
 
-    if 'file' not in request.files:
-        return jsonify({"msg": "No file part"}), 400
+        file = request.files['file']
 
-    file = request.files['file']
+        if file.filename == '':
+            return jsonify({"msg": "No selected file"}), 400
 
-    if file.filename == '':
-        return jsonify({"msg": "No selected file"}), 400
+        if not file.filename.endswith('.csv'):
+            return jsonify({"msg": "Invalid file type"}), 400
 
-    if not file.filename.endswith('.csv'):
-        return jsonify({"msg": "Invalid file type"}), 400
+        df = pd.read_csv(file)
 
-    df = pd.read_csv(file)
+        required_columns = ['roll_number', 'semester', 'attendance_percentage']
 
-    required_columns = ['roll_number', 'semester', 'attendance_percentage']
+        if not all(column in df.columns for column in required_columns):
+            return jsonify({"msg": "CSV missing required columns"}), 400
 
-    if not all(column in df.columns for column in required_columns):
-        return jsonify({"msg": "CSV missing required columns"}), 400
+        inserted = 0
+        updated = 0
 
-    inserted = 0
-    updated = 0
+        for index, row in df.iterrows():
+            existing = Attendance.query.filter_by(
+            roll_number=row['roll_number'],
+            semester=row['semester']
+            ).first()
 
-    for index, row in df.iterrows():
-        existing = Attendance.query.filter_by(
-        roll_number=row['roll_number'],
-        semester=row['semester']
-        ).first()
+            if existing:
 
-        if existing:
+                existing.attendance_percentage = row['attendance_percentage']
+                updated += 1
 
-            existing.attendance_percentage = row['attendance_percentage']
-            updated += 1
+            else:
 
-        else:
+                attendance = Attendance(
+                    roll_number=row['roll_number'],
+                    semester=row['semester'],
+                    attendance_percentage=row['attendance_percentage']
+                )
 
-            attendance = Attendance(
-                roll_number=row['roll_number'],
-                semester=row['semester'],
-                attendance_percentage=row['attendance_percentage']
-            )
+                db.session.add(attendance)
+                inserted += 1
 
-            db.session.add(attendance)
-            inserted += 1
+        db.session.commit()
+            
 
-    db.session.commit()
-        
-
-    return jsonify({
-        "message": "Upload completed",
-        "inserted": inserted,
-        "duplicates_skipped": updated
-    }), 200
+        return jsonify({
+            "message": "Upload completed",
+            "inserted": inserted,
+            "duplicates_skipped": updated
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        print("ATTENDANCE ERROR:", e)   # 🔥 VERY IMPORTANT
+        return jsonify({"msg": str(e)}), 500
 
 
 @attendance_blueprint.route('/<roll_number>', methods=['GET'])

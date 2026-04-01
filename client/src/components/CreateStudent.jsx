@@ -20,12 +20,16 @@ export default function CreateStudent(){
     try {
       setLoading(true);
   
-      await API.post("/students/upload_csv", formData);
+      await API.post("/students/upload_csv", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
   
       alert("✅ Students uploaded successfully");
   
       setFile(null);
       setFileName("");
+
+      document.getElementById("studentFile").value = "";
   
     } catch (err) {
       console.error("UPLOAD ERROR:", err);

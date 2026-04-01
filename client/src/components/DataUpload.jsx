@@ -17,21 +17,23 @@ export default function DataUpload(){
       alert("Please select a marks CSV file");
       return;
     }
+    setLoadingMarks(true); 
 
     const formData = new FormData();
     formData.append("file",marksFile);
 
     try{
 
+      setLoadingMarks(true);
       await API.post("/marks/upload_csv", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       alert("Marks Uploaded Successfully");
       setMarksFile(null);
       setMarksName("");
+
+      document.getElementById("marksFile").value = ""; 
 
     }catch (err) {
       alert(err.response?.data?.msg || "Upload failed");
@@ -55,14 +57,14 @@ export default function DataUpload(){
 
       setLoadingAttendance(true);
       await API.post("/attendance/upload_csv", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       alert("Attendance Uploaded Successfully");
       setAttendanceFile(null);
       setAttendanceName("");
+
+      document.getElementById("attendanceFile").value = ""; 
 
     }catch (err) {
       alert("Upload failed");
