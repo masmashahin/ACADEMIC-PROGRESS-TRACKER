@@ -15,8 +15,8 @@ export default function LoginPage() {
   
 
       const response = await API.post("/auth/login", {
-        email,
-        password
+        email: email,
+        password: password
       });
       const { access_token, role, roll_number } = response.data;
 

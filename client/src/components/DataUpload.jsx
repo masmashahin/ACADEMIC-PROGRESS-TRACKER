@@ -23,7 +23,11 @@ export default function DataUpload(){
 
     try{
 
-      await API.post("/marks/upload_csv",formData);
+      await API.post("/marks/upload_csv", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert("Marks Uploaded Successfully");
       setMarksFile(null);
@@ -50,7 +54,11 @@ export default function DataUpload(){
     try{
 
       setLoadingAttendance(true);
-      await API.post("/attendance/upload_csv",formData);
+      await API.post("/attendance/upload_csv", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       alert("Attendance Uploaded Successfully");
       setAttendanceFile(null);
