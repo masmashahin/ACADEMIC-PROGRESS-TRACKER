@@ -79,16 +79,13 @@ def home():
 # create tables + default user
 with app.app_context():
     db.create_all()
-
-    from models.models import User
-    from werkzeug.security import generate_password_hash
-
+       
     # 🔥 Create default user if not exists
     if not User.query.filter_by(email="admin@test.com").first():
         user = User(
-            name="Admin",
             email="admin@test.com",
-            password=generate_password_hash("123456")
+            password=generate_password_hash("123456"),
+            role="admin"
         )
         db.session.add(user)
         db.session.commit()
