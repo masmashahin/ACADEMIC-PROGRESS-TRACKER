@@ -2,18 +2,25 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
-import PageContainer from "../ui/layout/PageContainer";
+import DashboardLayout from "../ui/layout/DashboardLayout";
 import Card from "../ui/components/Card";
 
 const AdminDashboard = () => {
+  
   const navigate = useNavigate();
-
+  const [tab, setTab] = useState("overview");
   const [faculty, setFaculty] = useState({
     name: "",
     email: "",
     department: "",
     password: ""
   });
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/", { replace: true });
+  };
 
   const handleCreateFaculty = async () => {
     try {
@@ -63,98 +70,86 @@ const AdminDashboard = () => {
 
 
   return (
-    <PageContainer title="Admin Dashboard">
-
-    <div className="p-10 space-y-10">
-
-      <h1 className="text-3xl font-bold">
-        
-      </h1>
-      <button
-        onClick={()=>{
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            navigate("/", { replace: true });
-        }}
-        className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-        Logout
-        </button>
-
-
-      {/* CREATE FACULTY */}
-
-      <Card>
-
-        <h2 className="text-xl font-semibold">
-          Create Faculty
-        </h2>
-
-        <input
-          className="border p-2 w-full"
-          placeholder="Name"
-          value={faculty.name}
-          onChange={(e) =>
-            setFaculty({ ...faculty, name: e.target.value })
-          }
-        />
-
-        <input
-          className="border p-2 w-full"
-          placeholder="Email"
-          value={faculty.email}
-          onChange={(e) =>
-            setFaculty({ ...faculty, email: e.target.value })
-          }
-        />
-
-        <input
-          className="border p-2 w-full"
-          placeholder="Department"
-          value={faculty.department}
-          onChange={(e) =>
-            setFaculty({ ...faculty, department: e.target.value })
-          }
-        />
-
-        <input
-          className="border p-2 w-full"
-          type="password"
-          placeholder="Password"
-          value={faculty.password}
-          onChange={(e) =>
-            setFaculty({ ...faculty, password: e.target.value })
-          }
-        />
-
-        <button
-          onClick={handleCreateFaculty}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Create Faculty
-        </button>
-
-      </Card>
-
-
-      {/* STUDENT CSV UPLOAD */}
-
-        <Card>
-
-        <h2 className="text-xl font-semibold">
-          Upload Students CSV
-        </h2>
-
-        <input
-          type="file"
-          onChange={handleStudentUpload}
-        />
-
-      </Card>
-
-    </div>
-    </PageContainer>
-
+    <DashboardLayout
+      tab={tab}
+      setTab={setTab}
+      handleLogout={handleLogout}
+      tabLabel="Admin Dashboard"
+    >
+  
+      <div className="space-y-10">
+  
+        {/* CREATE FACULTY */}
+        <div className="bg-white rounded-2xl shadow p-6">
+  
+          <h2 className="text-xl font-semibold mb-4">
+            Create Faculty
+          </h2>
+  
+          <input
+            className="border p-2 w-full mb-3 rounded"
+            placeholder="Name"
+            value={faculty.name}
+            onChange={(e) =>
+              setFaculty({ ...faculty, name: e.target.value })
+            }
+          />
+  
+          <input
+            className="border p-2 w-full mb-3 rounded"
+            placeholder="Email"
+            value={faculty.email}
+            onChange={(e) =>
+              setFaculty({ ...faculty, email: e.target.value })
+            }
+          />
+  
+          <input
+            className="border p-2 w-full mb-3 rounded"
+            placeholder="Department"
+            value={faculty.department}
+            onChange={(e) =>
+              setFaculty({ ...faculty, department: e.target.value })
+            }
+          />
+  
+          <input
+            className="border p-2 w-full mb-3 rounded"
+            type="password"
+            placeholder="Password"
+            value={faculty.password}
+            onChange={(e) =>
+              setFaculty({ ...faculty, password: e.target.value })
+            }
+          />
+  
+          <button
+            onClick={handleCreateFaculty}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-lg"
+          >
+            Create Faculty
+          </button>
+  
+        </div>
+  
+        {/* CSV UPLOAD */}
+        <div className="bg-white rounded-2xl shadow p-6">
+  
+          <h2 className="text-xl font-semibold mb-4">
+            Upload Students CSV
+          </h2>
+  
+          <input
+            type="file"
+            onChange={handleStudentUpload}
+            className="border p-2 rounded w-full"
+          />
+  
+        </div>
+  
+      </div>
+  
+    </DashboardLayout>
   );
 
 };

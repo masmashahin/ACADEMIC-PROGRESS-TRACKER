@@ -1,7 +1,23 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from models.models import db, StudyPlanner, Student
+from datetime import datetime
+from models.models import StudySession
 study_planner_blueprint = Blueprint("study_planner", __name__)
+
+def calculate_efficiency(start, end, break_duration):
+    total = (end - start).total_seconds() / 3600
+
+    if total <= 0:
+        return 0, 0
+
+    if break_duration > total:
+        return 0, 0  # don't return jsonify here
+
+    study_time = total - break_duration
+    efficiency = (study_time / total) * 100
+
+    return study_time, efficiency
 
 @study_planner_blueprint.route("/api/study_planner", methods=["POST"])
 @jwt_required()
@@ -126,3 +142,58 @@ def delete_study_plan(plan_id):
 
     return jsonify({"msg": "Study plan deleted successfully"})
 
+
+@study_planner_blueprint.route("/api/study_session", methods=["POST"])
+@jwt_required()
+def add_study_session():
+
+    user_id = get_jwt_identity()
+    student = Student.query.filter_by(user_id=user_id).first()
+
+    if not student:
+        return jsonify({"msg": "Student not found"}), 404
+
+    data = request.get_json()
+    if not data.get("start_time") or not data.get("end_time"):
+        return jsonify({"msg": "Start time and end time required"}), 400
+
+    start = datetime.fromisoformat(data["start_time"].replace("Z",""))
+    end = datetime.fromisoformat(data["end_time"].replace("Z",""))
+
+    if end <= start:
+        return jsonify({"msg": "End time must be after start time"}), 400
+
+    break_type = data.get("break_type")
+    try:
+        break_duration = float(data.get("break_duration", 0))
+    except:
+        break_duration = 0
+
+    # RULE: sleep max 8 hrs
+    if break_type == "sleep" and break_duration > 8:
+        return jsonify({"msg": "Sleep break cannot exceed 8 hours"}), 400
+    
+    total_hours = (end - start).total_seconds() / 3600
+    if break_duration > total_hours:
+        return jsonify({"msg": "Break cannot exceed total session time"}), 400
+
+    study_time, efficiency = calculate_efficiency(start, end, break_duration)
+
+    session = StudySession(
+        student_id=student.id,
+        goal_id=data.get("goal_id"),
+        start_time=start,
+        end_time=end,
+        break_type=break_type,
+        break_duration=break_duration,
+        study_duration=study_time,
+        efficiency=efficiency
+    )
+
+    db.session.add(session)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Session saved",
+        "efficiency": round(efficiency, 2)
+    })

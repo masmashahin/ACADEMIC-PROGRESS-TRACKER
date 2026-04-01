@@ -196,17 +196,17 @@ export default function StudentProgress() {
                   {
                     label: "Internal 1",
                     data: data.marks?.map(m=>m.internal_1),
-                    backgroundColor: "orange"
+                    backgroundColor: "#a78a58"
                   },
                   {
                     label: "Internal 2",
                     data: data.marks?.map(m=>m.internal_2),
-                    backgroundColor: "blue"
+                    backgroundColor: "#1e3a8a"
                   },
                   {
                     label: "Semester",
                     data: data.marks?.map(m=>m.semester_marks),
-                    backgroundColor: "purple"
+                    backgroundColor: "#831843"
                   }
                 ]
               }}

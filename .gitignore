@@ -1,4 +1,19 @@
-node_modules
+# Python
+__pycache__/
+*.pyc
+venv/
 .env
-venv
-__pycache__
+
+# Database
+*.db
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+
+# Logs
+*.log

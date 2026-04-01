@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
 import os
 import logging
 from logging.config import dictConfig
@@ -25,6 +26,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = "super-secret-key"
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600
 db.init_app(app)
+migrate = Migrate(app, db)
 jwt = JWTManager(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 

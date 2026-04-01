@@ -70,3 +70,20 @@ class ProgressTracker(db.Model):
     planned_hours = Column(Integer, nullable=False)
     completed_hours = Column(Integer, nullable=False)
     completion_percentage = Column(Integer, nullable=False)
+
+class StudySession(db.Model):
+    __tablename__ = "study_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('students.id'))
+
+    goal_id = db.Column(db.Integer, db.ForeignKey('study_planner.id'))
+    
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=False)
+
+    break_type = db.Column(db.String(20))
+    break_duration = db.Column(db.Float)
+
+    study_duration = db.Column(db.Float)
+    efficiency = db.Column(db.Float)

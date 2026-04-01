@@ -4,13 +4,27 @@ import {
     FiUpload, 
     FiUserPlus 
   } from "react-icons/fi";
-export default function Sidebar({ tab, setTab }) {
-    const menu = [
-      { key: "overview", label: "Overview", icon: <FiHome /> },
-      { key: "progress", label: "Student Progress", icon: <FiTrendingUp /> },
-      { key: "upload", label: "Data Upload", icon: <FiUpload /> },
-      { key: "students", label: "Create Student", icon: <FiUserPlus /> },
-    ];
+export default function Sidebar({ tab, setTab, role }) {
+    let menu = [];
+
+    if (role === "admin") {
+      menu = [
+        { key: "overview", label: "Overview" }
+      ];
+    } else if (role === "faculty") {
+      menu = [
+        { key: "overview", label: "Overview" },
+        { key: "progress", label: "Student Progress" },
+        { key: "upload", label: "Data Upload" },
+        { key: "students", label: "Create Student" },
+      ];
+    } else if (role === "student") {
+      menu = [
+        { key: "progress", label: "Progress" },
+        { key: "planner", label: "Study Planner" },
+        { key: "tracker", label: "Progress Tracker" },
+      ];
+    }
   
     return (
       <aside className="w-64 bg-white/90 backdrop-blur border-r flex flex-col">
@@ -38,9 +52,7 @@ export default function Sidebar({ tab, setTab }) {
           {menu.map((item) => (
             <div
               key={item.key}
-              onClick={() => {setTab(item.key);
-              localStorage.setItem("facultyTab", item.key);
-              }}
+              onClick={() => setTab(item.key)}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all text-sm hover:scale-[1.02] ${
                 tab === item.key
                   ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow"

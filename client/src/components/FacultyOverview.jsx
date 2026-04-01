@@ -70,7 +70,7 @@ export default function FacultyOverview({ type, overview }) {
 
                 <td className="px-6 py-4">
                   <span className="px-2 py-1 rounded-md bg-red-100 text-red-600 text-xs font-medium">
-                    {s.academic_percentage}%
+                    {s.academic_percentage.toFixed(1)}%
                   </span>
                 </td>
 

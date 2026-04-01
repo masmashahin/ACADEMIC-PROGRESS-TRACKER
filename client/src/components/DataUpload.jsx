@@ -98,7 +98,7 @@ export default function DataUpload(){
             disabled={loadingMarks}
             onClick={uploadMarks}
             className={`px-5 py-2 rounded-lg text-sm font-medium text-white transition
-              ${loadingMarks ? "bg-green-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}
+              ${loadingMarks ? "bg-green-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
             `}
           >
             {loadingMarks ? "Uploading..." : "Upload"}

@@ -8,13 +8,13 @@ export default function DashboardLayout({ children, tab, setTab, handleLogout, t
     { key: "upload", label: "Data Upload" },
     { key: "students", label: "Create Student" },
   ];
-  
+  const role = localStorage.getItem("role");
   const currentTab = menu.find((item) => item.key === tab);
   return (
     <div className="flex h-screen bg-gray-100">
 
       {/* Sidebar */}
-      <Sidebar tab={tab} setTab={setTab} />
+      <Sidebar tab={tab} setTab={setTab} role={role} />
 
       {/* Main Area */}
       <div className="flex flex-col flex-1">

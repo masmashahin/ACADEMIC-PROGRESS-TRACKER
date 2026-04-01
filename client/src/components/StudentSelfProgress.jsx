@@ -81,8 +81,8 @@ export default function StudentProgress() {
 
       {data && (
 
-        <div className="space-y-6">
-            <div className="bg-white p-6 rounded shadow mb-6">
+        <div className="space-y-8">
+            <div className="bg-white p-6 rounded-xl shadow mb-6 border">
 
                 <h2 className="text-xl font-bold mb-2">
                 Student Information
@@ -102,9 +102,24 @@ export default function StudentProgress() {
 
             </div>
 
-          <p><b>Academic %:</b> {data.academic_percentage}</p>
-          <p><b>Attendance %:</b> {data.attendance_percentage}</p>
-          <p><b>CGPA:</b> {data.cgpa}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              <div className="bg-gradient-to-r from-pink-500 to-red-500 text-white p-5 rounded-xl shadow">
+                <p className="text-sm">Academic %</p>
+                <h2 className="text-2xl font-bold">{data.academic_percentage}%</h2>
+              </div>
+
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-5 rounded-xl shadow">
+                <p className="text-sm">Attendance %</p>
+                <h2 className="text-2xl font-bold">{data.attendance_percentage}%</h2>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-5 rounded-xl shadow">
+                <p className="text-sm">CGPA</p>
+                <h2 className="text-2xl font-bold">{data.cgpa}</h2>
+              </div>
+
+            </div>
 
           {/* RISK WARNING */}
 
@@ -118,33 +133,33 @@ export default function StudentProgress() {
 
           {/* MARKS TABLE */}
 
-          <div>
+          <div className="border-white rounded-xl shadow p-6">
 
-            <h3 className="font-bold mb-2">
+            <h3 className="font-semi-bold mb-4 text-lg">
               Marks
             </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full table-fixed border-collapse">
 
-            <table className="w-full border">
-
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border p-2">Subject</th>
-                  <th className="border p-2">Internal 1</th>
-                  <th className="border p-2">Internal 2</th>
-                  <th className="border p-2">Semester Marks</th>
+              <thead className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+                <tr>
+                  <th className="p-3 text-left">Subject</th>
+                  <th className="p-3 text-left">Internal 1</th>
+                  <th className="p-3 text-left">Internal 2</th>
+                  <th className="p-3 text-left">Semester Marks</th>
                 </tr>
               </thead>
 
-              <tbody>
+              <tbody className="divide-y text-gray-700">
 
                 {data.marks?.map((m,i) => (
 
                   <tr key={i}>
 
-                    <td className="border p-2">{m.subject_id}</td>
-                    <td className="border p-2">{m.internal_1}</td>
-                    <td className="border p-2">{m.internal_2}</td>
-                    <td className="border p-2">{m.semester_marks}</td>
+                    <td className="p-3 border-b">{m.subject_id}</td>
+                    <td className="p-3 border-b">{m.internal_1}</td>
+                    <td className="p-3 border-b">{m.internal_2}</td>
+                    <td className="p-3 border-b">{m.semester_marks}</td>
 
                   </tr>
 
@@ -152,124 +167,127 @@ export default function StudentProgress() {
 
               </tbody>
 
-            </table>
+              </table>
+            </div>
 
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* CGPA CHART */}
 
-          {/* CGPA CHART */}
+            <div className="bg-white rounded-xl shadow p-6">
 
-          <div>
-
-            <h3 className="font-bold mb-2">
-              CGPA Trend
-            </h3>
-
-            <Line
-              data={{
-                labels: data.cgpa_trend?.map(c => `Sem ${c.semester}`),
-                datasets: [
-                  {
-                    label: "CGPA",
-                    data: data.cgpa_trend?.map(c => Number(c.cgpa)),
-                    borderColor: "blue",
-                    backgroundColor: "rgba(0,0,255,0.2)",
-                    pointRadius: 5,
-                    pointBackgroundColor: "blue",
-                    tension: 0.3 
-            
-                  } 
-                ]
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  tooltip: {
-                    enabled: true
-                  },
-                  legend: {
-                    display: true
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: false,
-                    min: 0,
-                    max: 10,
-                    ticks: {
-                      stepSize: 1
+              <h3 className="font-semi-bold mb-4 text-lg">
+                CGPA Trend
+              </h3>
+              <div className="h-[300px]">
+                <Line
+                  data={{
+                    labels: data.cgpa_trend?.map(c => `Sem ${c.semester}`),
+                    datasets: [
+                      {
+                        label: "CGPA",
+                        data: data.cgpa_trend?.map(c => Number(c.cgpa)),
+                        borderColor: "#1d4ed8",
+                        backgroundColor: "rgba(29,78,216,0.15)",
+                        pointRadius: 4,
+                        pointBackgroundColor: "#1d4ed8",
+                        tension: 0.4 
+                
+                      } 
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      tooltip: {
+                        enabled: true
+                      },
+                      legend: {
+                        display: true
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                          stepSize: 1
+                        }
+                      }
                     }
-                  }
-                }
-              }}
-            />
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* ATTENDANCE CHART */}
+
+            <div className="bg-white rounded-xl shadow p-6">
+
+              <h3 className="font-semi-bold mb-4 text-lg">
+                Attendance Trend
+              </h3>
+              <div className="h-[300px]">
+                <Bar
+                  data={{
+                    labels: data.attendance?.map(a => `Sem ${a.semester}`),
+                    datasets: [
+                    {
+                    label: "Attendance %",
+                    data: data.attendance?.map(a => a.attendance_percentage),
+                    backgroundColor: "green"
+                    }
+                    ]
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* MARKS COMPARISON */}
+
+            <div className="bg-white rounded-xl shadow p-6 w-full">
+
+              <h3 className="text-lg font-semibold mb-4">
+                Marks Comparison
+              </h3>
+              <div className="w-fullh-[350px]">
+                <Bar
+                  data={{
+                    labels: data.marks?.map(m=>m.subject_id),
+                    datasets: [
+                      {
+                        label: "Internal 1",
+                        data: data.marks?.map(m=>m.internal_1),
+                        backgroundColor: "#a78a58"
+                      },
+                      {
+                        label: "Internal 2",
+                        data: data.marks?.map(m=>m.internal_2),
+                        backgroundColor: "#1e3a8a"
+                      },
+                      {
+                        label: "Semester",
+                        data: data.marks?.map(m=>m.semester_marks),
+                        backgroundColor: "#831843"
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        max: 100
+                      }
+                    }
+                  }}
+                />
+              </div>
+
+            </div>
 
           </div>
-
-          {/* ATTENDANCE CHART */}
-
-          <div>
-
-            <h3 className="font-bold mb-2">
-              Attendance Trend
-            </h3>
-
-            <Bar
-              data={{
-                labels: data.attendance?.map(a => `Sem ${a.semester}`),
-                datasets: [
-                {
-                label: "Attendance %",
-                data: data.attendance?.map(a => a.attendance_percentage),
-                backgroundColor: "green"
-                }
-                ]
-              }}
-            />
-
-          </div>
-
-          {/* MARKS COMPARISON */}
-
-          <div>
-
-            <h3 className="font-bold mb-2">
-              Marks Comparison
-            </h3>
-
-            <Bar
-              data={{
-                labels: data.marks?.map(m=>m.subject_id),
-                datasets: [
-                  {
-                    label: "Internal 1",
-                    data: data.marks?.map(m=>m.internal_1),
-                    backgroundColor: "orange"
-                  },
-                  {
-                    label: "Internal 2",
-                    data: data.marks?.map(m=>m.internal_2),
-                    backgroundColor: "blue"
-                  },
-                  {
-                    label: "Semester",
-                    data: data.marks?.map(m=>m.semester_marks),
-                    backgroundColor: "purple"
-                  }
-                ]
-              }}
-              options={{
-                responsive: true,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 100
-                  }
-                }
-              }}
-            />
-
-          </div>
-
           {/* RECOMMENDATIONS */}
 
           {data.recommendations && data.recommendations.length > 0  && (
