@@ -77,10 +77,9 @@ def home():
     return {"message": "Academic Progress Tracker Backend Running"}
 # create tables
 # create tables + default user
-with app.app_context():
-    db.create_all()
+@app.route("/create-user")
+def create_user():
 
-    # 🔥 Create default user if not exists
     if not User.query.filter_by(email="admin@test.com").first():
         user = User(
             email="admin@test.com",
@@ -89,8 +88,9 @@ with app.app_context():
         )
         db.session.add(user)
         db.session.commit()
+        return {"message": "User created"}
 
-        print("DEFAULT USER CREATED")
+    return {"message": "User already exists"}
 if __name__ == '__main__':  
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
