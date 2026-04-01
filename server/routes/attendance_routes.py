@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError
+
 from models.models import db, Attendance
 import pandas as pd
+import io
 
 attendance_blueprint = Blueprint("attendance", __name__, url_prefix='/api/attendance')
 
@@ -21,7 +23,8 @@ def upload_attendance_csv():
         if not file.filename.endswith('.csv'):
             return jsonify({"msg": "Invalid file type"}), 400
 
-        df = pd.read_csv(file)
+        df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
+        df.columns = df.columns.str.strip()
 
         required_columns = ['roll_number', 'semester', 'attendance_percentage']
 
