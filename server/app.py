@@ -83,7 +83,7 @@ def create_user():
     if not User.query.filter_by(email="admin@test.com").first():
         user = User(
             email="admin@test.com",
-            password=generate_password_hash("123456"),
+            password=generate_password_hash("admin@123"),
             role="admin"
         )
         db.session.add(user)
