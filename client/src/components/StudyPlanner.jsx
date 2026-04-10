@@ -10,36 +10,32 @@ export default function StudyPlanner() {
   const [hours, setHours] = useState("");
   const [deadline, setDeadline] = useState("");
   const [priority, setPriority] = useState("Medium");
-  const [timers, setTimers] = useState({});
+  const [timers, setTimers] = useState(() => {
+    const savedRaw = localStorage.getItem("activeTimer");
+    if (!savedRaw) return {};
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("activeTimer"));
-  
-    if (!saved) return;
-  
-    const now = Date.now();
-  
-    let elapsed = 0;
-  
-    if (saved.running) {
-      elapsed = (now - saved.start) / 1000;
-    } else {
-      elapsed = saved.elapsed || 0;
+    try {
+      const saved = JSON.parse(savedRaw);
+      if (!saved?.goalId || !saved?.start) return {};
+
+      const now = Date.now();
+      const elapsed = saved.running
+        ? (now - saved.start) / 1000
+        : saved.elapsed || 0;
+
+      return {
+        [saved.goalId]: {
+          start: saved.start,
+          elapsed,
+          breakTime: saved.breakTime || 0,
+          running: saved.running,
+          breakStart: saved.breakStart || null
+        }
+      };
+    } catch {
+      return {};
     }
-  
-    setTimers({
-      [saved.goalId]: {
-        start: saved.start,
-        elapsed,
-        breakTime: saved.breakTime || 0,
-        running: saved.running,
-        breakStart: saved.breakStart || null
-      }
-    });
-  }, []);
+  });
 
   const fetchGoals = async () => {
     try {
@@ -49,7 +45,15 @@ export default function StudyPlanner() {
       console.error(err);
     }
   };
-  
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      fetchGoals();
+    }, 0);
+
+    return () => clearTimeout(timerId);
+  }, []);
+
   // ✅ TIMER LOOP (per goal)
   useEffect(() => {
     const interval = setInterval(() => {
@@ -106,7 +110,7 @@ export default function StudyPlanner() {
       fetchGoals();
     } catch (err) {
       console.error(err);
-      alert("Error deleting goal");
+      alert(err.response?.data?.msg || "Error deleting goal");
     }
   };
 
@@ -232,7 +236,7 @@ export default function StudyPlanner() {
     console.log("DIFF SEC:", (end - t.start) / 1000);
 
     try {
-      const res = await API.post("/study_session", {
+      await API.post("/study_session", {
         goal_id: goalId,
         start_time: new Date(t.start * (t.start < 10000000000 ? 1000 : 1)).toISOString(),
         end_time: new Date(end).toISOString(),
@@ -475,8 +479,6 @@ export default function StudyPlanner() {
 
                           {/* ✅ PER-GOAL TIMER */}
                           {(() => {
-                            const timer = timers[goal.id] || {};
-
                             return (
                               <p className="mb-2">
                                 ⏱ Time: {Math.floor((elapsed - breakTime) / 60)} min {Math.floor((elapsed - breakTime) % 60)} sec

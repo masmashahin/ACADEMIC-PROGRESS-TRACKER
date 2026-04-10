@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from models.models import db, StudyPlanner, Student
 from datetime import datetime
 from models.models import StudySession
+from sqlalchemy.exc import IntegrityError
 study_planner_blueprint = Blueprint("study_planner", __name__)
 
 def calculate_efficiency(start, end, break_duration):
@@ -122,9 +123,9 @@ def update_study_plan(plan_id):
 
     return jsonify({"msg": "Study plan updated successfully"})
 
-@study_planner_blueprint.route("/api/study_planner/<int:plan_id>", methods=["DELETE"])
+@study_planner_blueprint.route("/api/study_planner/<int:id>", methods=["DELETE"])
 @jwt_required()
-def delete_study_plan(plan_id):
+def delete_task(id):
 
     user_id = get_jwt_identity()
     student = Student.query.filter_by(user_id=user_id).first()
@@ -132,15 +133,28 @@ def delete_study_plan(plan_id):
     if not student:
         return jsonify({"msg": "Student not found"}), 404
 
-    plan = StudyPlanner.query.filter_by(id=plan_id, student_id=student.id).first()
+    task = StudyPlanner.query.filter_by(id=id, student_id=student.id).first()
 
-    if not plan:
-        return jsonify({"msg": "Study plan not found"}), 404
+    if not task:
+        return jsonify({"msg": "Task not found"}), 404
 
-    db.session.delete(plan)
-    db.session.commit()
+    try:
+        # Detach linked sessions before deleting the goal to avoid FK constraint errors.
+        StudySession.query.filter_by(goal_id=task.id, student_id=student.id).update(
+            {"goal_id": None},
+            synchronize_session=False
+        )
 
-    return jsonify({"msg": "Study plan deleted successfully"})
+        db.session.delete(task)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"msg": "Unable to delete task due to linked records"}), 409
+    except Exception:
+        db.session.rollback()
+        return jsonify({"msg": "Failed to delete task"}), 500
+
+    return jsonify({"msg": "Deleted successfully"}), 200
 
 
 @study_planner_blueprint.route("/api/study_session", methods=["POST"])
