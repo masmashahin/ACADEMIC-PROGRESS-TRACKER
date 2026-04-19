@@ -46,7 +46,7 @@ export default function StudentProgress() {
   
     fetchStudent();
   
-  }, [semester]);
+  }, [roll, semester]);
 
   return (
 

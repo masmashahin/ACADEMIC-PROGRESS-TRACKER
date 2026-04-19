@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
@@ -6,10 +6,12 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoggingIn(true);
 
     try {
   
@@ -17,6 +19,8 @@ export default function LoginPage() {
       const response = await API.post("/auth/login", {
         email: email,
         password: password
+      }, {
+        timeout: 60000
       });
       const { access_token, role, roll_number } = response.data;
 
@@ -46,7 +50,13 @@ export default function LoginPage() {
 
     } catch (error) {
       console.error(error);
-      alert("Login failed. Please check your credentials.");
+      if (error.code === "ECONNABORTED") {
+        alert("Login timed out. Backend may be waking up. Please try again in a few seconds.");
+      } else {
+        alert(error.response?.data?.msg || "Login failed. Please check your credentials.");
+      }
+    } finally {
+      setLoggingIn(false);
     }
   };
 
@@ -81,9 +91,10 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+          disabled={loggingIn}
+          className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Login
+          {loggingIn ? "Logging in..." : "Login"}
         </button>
 
       </form>

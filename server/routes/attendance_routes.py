@@ -45,26 +45,29 @@ def upload_attendance_csv():
         inserted = 0
         updated = 0
         df = df.dropna()
-        
+
         for index, row in df.iterrows():
+            try:
+                roll = str(row['roll_number']).strip()
+                sem = str(row['semester']).strip()
+                attendance_val = float(row['attendance_percentage'])
+            except Exception:
+                continue   # skip bad rows
+
             existing = Attendance.query.filter_by(
-            roll_number=row['roll_number'],
-            semester=row['semester']
+                roll_number=roll,
+                semester=sem
             ).first()
 
             if existing:
-
-                existing.attendance_percentage = row['attendance_percentage']
+                existing.attendance_percentage = attendance_val
                 updated += 1
-
             else:
-
                 attendance = Attendance(
-                    roll_number=row['roll_number'],
-                    semester=row['semester'],
-                    attendance_percentage=float(row['attendance_percentage'])
+                    roll_number=roll,
+                    semester=sem,
+                    attendance_percentage=attendance_val
                 )
-
                 db.session.add(attendance)
                 inserted += 1
 

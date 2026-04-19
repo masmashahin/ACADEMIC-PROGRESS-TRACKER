@@ -1,4 +1,4 @@
-import { useState,  } from "react";
+import { useState } from "react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,15 +12,8 @@ import DashboardLayout from "../ui/layout/DashboardLayout";
 
 export default function FacultyDashboard() {
 
-  const [tab, setTab] = useState("overview");
+  const [tab, setTab] = useState(() => localStorage.getItem("facultyTab") || "overview");
   const [overview, setOverview] = useState(null);
-
-  useEffect(() => {
-    const savedTab = localStorage.getItem("facultyTab");
-    if (savedTab) {
-      setTab(savedTab);
-    }
-  }, []);
   useEffect(() => {
     localStorage.setItem("facultyTab", tab);
   }, [tab]);

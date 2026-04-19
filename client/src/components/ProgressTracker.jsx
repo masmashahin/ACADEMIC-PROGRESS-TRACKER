@@ -18,23 +18,22 @@ export default function ProgressTracker() {
 
   const [data, setData] = useState(null);
 
-  useEffect(() => {
-    fetchProgress();
-  }, []);
-
   const fetchProgress = async () => {
-
     try {
-
       const res = await API.get("/progress_tracker");
-      
       setData(res.data);
-
     } catch (err) {
       console.error("Error fetching progress:", err);
     }
-
   };
+
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      fetchProgress();
+    }, 0);
+
+    return () => clearTimeout(timerId);
+  }, []);
 
   if (!data) {
     return <p>Loading progress...</p>;

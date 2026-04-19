@@ -2,14 +2,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function DashboardLayout({ children, tab, setTab, handleLogout, tabLabel }) {
-  const menu = [
-    { key: "overview", label: "Overview" },
-    { key: "progress", label: "Student Progress" },
-    { key: "upload", label: "Data Upload" },
-    { key: "students", label: "Create Student" },
-  ];
   const role = localStorage.getItem("role");
-  const currentTab = menu.find((item) => item.key === tab);
   return (
     <div className="flex h-screen bg-gray-100">
 

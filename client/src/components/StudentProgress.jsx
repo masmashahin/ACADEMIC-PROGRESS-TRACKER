@@ -25,7 +25,20 @@ export default function StudentProgress() {
 
   const [roll, setRoll] = useState("");
   const [data, setData] = useState(null);
+  const [year, setYear] = useState("");
   const [semester, setSemester] = useState("");
+
+  const semestersByYear = {
+    "1": [1, 2],
+    "2": [3, 4],
+    "3": [5, 6],
+    "4": [7, 8]
+  };
+
+  const semesterOptions = year
+    ? semestersByYear[year] || []
+    : [1, 2, 3, 4, 5, 6, 7, 8];
+
   const searchStudent = async () => {
     if (!roll) {
         alert("Please enter roll number");
@@ -54,15 +67,32 @@ export default function StudentProgress() {
       <input
         className="border p-2 rounded w-full md:w-1/3"
         placeholder="Enter Roll Number"
+        value={roll}
         onChange={(e)=>setRoll(e.target.value)}
       />
 
       <select
         className="border p-2 rounded w-full md:w-1/4"
+        value={year}
+        onChange={(e) => {
+          const selectedYear = e.target.value;
+          setYear(selectedYear);
+          setSemester("");
+        }}
+      >
+        <option value="">Select Year</option>
+        {[1, 2, 3, 4].map((y) => (
+          <option key={y} value={y}>Year {y}</option>
+        ))}
+      </select>
+
+      <select
+        className="border p-2 rounded w-full md:w-1/4"
+        value={semester}
         onChange={(e)=>setSemester(e.target.value)}
       >
         <option value="">Select Semester</option>
-        {[1,2,3,4,5,6,7,8].map(s => (
+        {semesterOptions.map(s => (
           <option key={s} value={s}>Sem {s}</option>
         ))}
       </select>
